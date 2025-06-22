@@ -105,4 +105,5 @@ def parse_page_ranges(page_range_str, total_pages):
     return sorted(pages)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    port = int(os.environ.get('PORT', 5000))
+    app.run(host='0.0.0.0', port=port, debug=False)
