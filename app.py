@@ -5,8 +5,10 @@ import subprocess
 from PyPDF2 import PdfReader, PdfWriter
 from PIL import Image
 import platform
+from flask_cors import CORS
 app = Flask(__name__, static_folder='static', template_folder='templates')
 
+CORS(app)
 @app.route('/')
 def index():
     return render_template('index.html')
