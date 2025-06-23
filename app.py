@@ -63,12 +63,18 @@ def merge_files():
 @app.route('/convert-to-pdf', methods=['POST'])
 def convert_office_to_pdf():
     uploaded_file = request.files.get('file')
+    
     if not uploaded_file:
+        print("❌ No file received.")
         return jsonify({'error': 'No file uploaded'}), 400
+
+    print("✅ File received:", uploaded_file.filename)
 
     temp_dir = tempfile.mkdtemp()
     input_path = os.path.join(temp_dir, uploaded_file.filename)
     uploaded_file.save(input_path)
+
+    print("📄 File saved to:", input_path)
 
     # LibreOffice conversion
     try:
@@ -77,19 +83,23 @@ def convert_office_to_pdf():
         else:
             libreoffice_cmd = "libreoffice"
 
+        print("⚙️ Starting LibreOffice conversion...")
         subprocess.run([
             libreoffice_cmd, '--headless', '--convert-to', 'pdf', '--outdir', temp_dir, input_path
         ], check=True)
-
-    except subprocess.CalledProcessError:
+        print("✅ Conversion finished.")
+    except subprocess.CalledProcessError as e:
+        print("❌ LibreOffice conversion failed:", str(e))
         return jsonify({'error': 'Conversion failed'}), 500
 
     output_filename = os.path.splitext(uploaded_file.filename)[0] + '.pdf'
     output_path = os.path.join(temp_dir, output_filename)
 
     if not os.path.exists(output_path):
+        print("❌ PDF output not found at:", output_path)
         return jsonify({'error': 'PDF file not created'}), 500
 
+    print("✅ Sending PDF file:", output_path)
     return send_file(output_path, as_attachment=True)
 
 def parse_page_ranges(page_range_str, total_pages):
