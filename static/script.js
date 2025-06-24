@@ -1,53 +1,26 @@
-document.getElementById('uploadForm').addEventListener('submit', async function(e) {
-    e.preventDefault();
-
-    const files = document.getElementById('pdfFiles').files;
-    if (files.length === 0) {
-        alert("Please select PDF files to merge");
-        return;
-    }
-
-    const formData = new FormData();
-    for (let i = 0; i < files.length; i++) {
-        formData.append('pdfFiles', files[i]);
-    }
-
-    const response = await fetch('/merge', {
+async function generateCode() {
+    const text = document.getElementById('textInput').value;
+    const res = await fetch('/generate-code', {
         method: 'POST',
-        body: formData
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: text })
     });
-
-    if (!response.ok) {
-        alert("Failed to merge files");
-        return;
-    }
-
-    const blob = await response.blob();
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = "merged.pdf";
-    a.click();
-});
-
-document.getElementById('ocrForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-
-  const ocrInput = document.getElementById('ocrFiles');
-  const ocrFormData = new FormData();
-
-  [...ocrInput.files].forEach(file => ocrFormData.append('files', file));
-
-  const res = await fetch('/extract-text', {
-    method: 'POST',
-    body: ocrFormData
-  });
-
-  if (res.ok) {
     const data = await res.json();
-    document.getElementById('ocrResult').innerText = data.extracted_text;
-  } else {
-    alert("Failed to extract text");
-  }
-});
+    document.getElementById('codeOutput').innerText = data.unique_code;
+}
 
+async function convertDocx() {
+    const fileInput = document.getElementById('docxFile');
+    const formData = new FormData();
+    formData.append('file', fileInput.files[0]);
+
+    const res = await fetch('/convert-docx', { method: 'POST', body: formData });
+    if (res.ok) {
+        const blob = await res.blob();
+        const url = window.URL.createObjectURL(blob);
+        window.open(url);
+    } else {
+        const data = await res.json();
+        alert(data.error);
+    }
+}

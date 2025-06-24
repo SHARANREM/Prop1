@@ -1,20 +1,22 @@
 FROM python:3.11-slim
 
-# Install system dependencies (LibreOffice)
-RUN apt-get update && apt-get install -y libreoffice curl && apt-get clean
+# Install LibreOffice and basic fonts
+RUN apt-get update && \
+    apt-get install -y libreoffice fonts-dejavu && \
+    apt-get clean
 
 # Set work directory
 WORKDIR /app
 
-# Copy and install Python dependencies
+# Copy requirements and install Python dependencies
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy app code
+# Copy application code
 COPY . .
 
 # Expose port
 EXPOSE 5000
 
-# Run the application
-CMD ["python", "app.py"]
+# Start the app using gunicorn for production
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "app:app"]

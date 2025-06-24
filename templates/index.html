@@ -1,144 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PrinterRem - Merge PDFs and Images</title>
-  <link rel="stylesheet" href="/static/style/main.css">
+    <meta charset="UTF-8">
+    <title>BackendRem</title>
 </head>
+
 <body>
+    <h1>BackendRem Testing</h1>
 
-  <div class="container">
-    <h1>Merge PDFs and Images</h1>
+    <h2>Generate Code</h2>
+    <input type="text" id="textInput" placeholder="Enter text">
+    <button onclick="generateCode()">Generate</button>
+    <p id="codeOutput"></p>
 
-    <form id="uploadForm" enctype="multipart/form-data">
+    <h2>Convert DOCX to PDF</h2>
+    <input type="file" id="docxFile">
+    <button onclick="convertDocx()">Convert</button>
 
-      <h3>Upload PDFs:</h3>
-      <input type="file" id="pdfFiles" name="pdfFiles" multiple accept="application/pdf" required><br><br>
-
-      <div id="pdfOptions"></div>
-
-      <h3>Upload Images:</h3>
-      <input type="file" id="imageFiles" name="imageFiles" multiple accept="image/*"><br><br>
-
-      <div id="imageOptions"></div>
-
-      <button type="submit">Merge</button>
-    </form>
-
-        <hr>
-    <h2>Convert Office File to PDF</h2>
-
-    <form id="convertForm" enctype="multipart/form-data">
-      <label>Select DOCX, XLSX, or PPTX file:</label><br>
-      <input type="file" id="officeFile" name="file" accept=".docx,.xlsx,.pptx" required><br><br>
-      <button type="submit">Convert to PDF</button>
-    </form>
-
-    <div id="convertResult"></div>
-
-    <div id="result"></div>
-
-  </div>
-
-  <script>
-    const pdfInput = document.getElementById('pdfFiles');
-    const imageInput = document.getElementById('imageFiles');
-    const pdfOptions = document.getElementById('pdfOptions');
-    const imageOptions = document.getElementById('imageOptions');
-
-    pdfInput.addEventListener('change', () => {
-      pdfOptions.innerHTML = '';
-      [...pdfInput.files].forEach((file, index) => {
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <label>${file.name} - Page Range (optional):</label>
-          <input type="text" name="page_range_${index}" placeholder="e.g. 1-3,5,7-9">
-          <br><br>`;
-        pdfOptions.appendChild(div);
-      });
-    });
-
-    imageInput.addEventListener('change', () => {
-      imageOptions.innerHTML = '';
-      [...imageInput.files].forEach((file, index) => {
-        const div = document.createElement('div');
-        div.innerHTML = `
-          <label>${file.name} - Orientation:</label>
-          <select name="orientation_${index}">
-            <option value="portrait">Portrait (A4)</option>
-            <option value="landscape">Landscape (A4)</option>
-          </select><br><br>`;
-        imageOptions.appendChild(div);
-      });
-    });
-
-    document.getElementById('uploadForm').addEventListener('submit', async (e) => {
-      e.preventDefault();
-
-      const formData = new FormData();
-
-      [...pdfInput.files].forEach(file => formData.append('pdfFiles', file));
-      [...imageInput.files].forEach(file => formData.append('imageFiles', file));
-
-      document.querySelectorAll('[name^=page_range_]').forEach(input => {
-        formData.append(input.name, input.value);
-      });
-
-      document.querySelectorAll('[name^=orientation_]').forEach(select => {
-        formData.append(select.name, select.value);
-      });
-
-      const res = await fetch('/merge', {
-        method: 'POST',
-        body: formData
-      });
-
-      if (res.ok) {
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "merged.pdf";
-        a.click();
-      } else {
-        const err = await res.json();
-        alert("Error: " + err.error);
-      }
-    });
-
-     document.getElementById('convertForm').addEventListener('submit', async (e) => {
-    e.preventDefault();
-
-    const officeInput = document.getElementById('officeFile');
-    const formData = new FormData();
-    formData.append('file', officeInput.files[0]);
-
-    // Show progress message
-    document.getElementById('convertResult').innerText = "Uploading file...";
-    
-    const res = await fetch('/convert-to-pdf', {
-        method: 'POST',
-        body: formData
-    });
-
-    if (res.ok) {
-        document.getElementById('convertResult').innerText = "Converting...";
-        const blob = await res.blob();
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = "converted.pdf";
-        a.click();
-        document.getElementById('convertResult').innerText = "Done!";
-    } else {
-        const err = await res.json();
-        alert("Error: " + err.error);
-        document.getElementById('convertResult').innerText = "";
-    }
-});
-
-  </script>
-
+    <script src="/static/script.js"></script>
 </body>
+
 </html>
